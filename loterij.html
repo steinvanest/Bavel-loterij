@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bavel Superstars Loterij</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2E8B4A;
+    --green-dark: #1A5C30;
+    --green-light: #E8F5EE;
+    --red: #C0392B;
+    --bg: #F4F7F5;
+    --surface: #FFFFFF;
+    --surface2: #EDF3EF;
+    --border: rgba(0,0,0,0.08);
+    --text: #0A1A0D;
+    --text-muted: #5A7A62;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 1rem; font-weight: 800; color: var(--green); display:flex; align-items:center; gap:0.5rem; }
+  .logo img { height:32px; width:32px; object-fit:contain; }
+  .nav-tabs { display: flex; gap: 0.25rem; }
+  .nav-tab {
+    padding: 0.4rem 0.8rem; border-radius: 6px; border: none;
+    background: transparent; color: var(--text-muted); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; transition: all 0.15s;
+  }
+  .nav-tab:hover { background: var(--surface2); color: var(--text); }
+  .nav-tab.active { background: var(--green); color: #fff; font-weight: 600; }
+  .nav-tab { display: none; }
+  .nav-tab.visible { display: inline-flex; }
+
+  /* PAGES */
+  .page { display: none; padding: 1.25rem; max-width: 680px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; transition: all 0.15s; }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { background: var(--green-dark); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-lg { padding: 0.85rem 1.5rem; font-size: 1rem; border-radius: 10px; width: 100%; justify-content: center; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* FORM */
+  input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.15s; }
+  input:focus, select:focus { border-color: var(--green); }
+  label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .form-row { margin-bottom: 0.9rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; text-align: center; }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--green); }
+  .stat-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* LOGIN */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 360px; text-align: center; }
+  .login-card h2 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+  .login-card p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .login-logo { font-size: 2.5rem; margin-bottom: 1rem; }
+
+  /* PRIZE LIST */
+  .prize-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .prize-item:last-child { border-bottom: none; }
+  .prize-badge { background: var(--green); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; min-width: 2rem; text-align: center; }
+  .delete-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0 0.3rem; }
+  .delete-btn:hover { color: var(--red); }
+  .add-prize-row { display: grid; grid-template-columns: 1fr 80px auto; gap: 0.5rem; align-items: end; margin-bottom: 0.75rem; }
+
+  /* UPLOAD */
+  .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.15s; margin-bottom: 0.75rem; }
+  .upload-zone:hover { border-color: var(--green); }
+  .upload-zone p { color: var(--text-muted); font-size: 0.82rem; margin-top: 0.3rem; }
+
+  /* PACKAGES */
+  .packages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+  .pkg { border: 2px solid var(--border); border-radius: 12px; padding: 1rem 0.75rem; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
+  .pkg:hover { border-color: var(--green); }
+  .pkg.selected { border-color: var(--green); background: var(--green-light); }
+  .pkg-price { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--green); }
+  .pkg-name { font-size: 0.75rem; font-weight: 600; color: var(--text); margin-top: 0.1rem; }
+  .pkg-lots { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .pkg-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 10px; white-space: nowrap; }
+
+  /* SCRATCH GRID */
+  .scratch-intro { text-align: center; margin-bottom: 1.25rem; }
+  .scratch-intro h2 { font-size: 1.3rem; font-weight: 800; }
+  .scratch-intro p { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem; }
+  .scratch-grid { display: grid; gap: 0.5rem; margin-bottom: 1.25rem; max-width: 380px; margin-left: auto; margin-right: auto; }
+  .scratch-grid.cols-1 { grid-template-columns: repeat(1, 80px); justify-content: center; }
+  .scratch-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .scratch-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .scratch-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .scratch-box { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1; user-select: none; }
+  .scratch-prize { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem; text-align: center; }
+  .scratch-prize .prize-icon { font-size: 1.6rem; margin-bottom: 0.2rem; }
+  .scratch-prize .prize-text { font-size: 0.65rem; font-weight: 500; line-height: 1.2; }
+  .scratch-prize.won { border-color: var(--green); background: var(--green-light); }
+  .scratch-prize.lost { opacity: 0.5; }
+  canvas.scratch-layer { position: absolute; inset: 0; border-radius: 10px; touch-action: none; cursor: crosshair; }
+
+  /* WINNER */
+  .winner-banner { background: linear-gradient(135deg, #2E8B4A, #1A5C30); border-radius: 14px; padding: 1.25rem; text-align: center; margin-bottom: 1rem; display: none; color: #fff; }
+  .winner-banner.show { display: block; animation: popIn 0.4s ease; }
+  .winner-banner h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 0.25rem; }
+  .winner-banner .win-code { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: 0.15em; background: rgba(255,255,255,0.2); border-radius: 8px; padding: 0.4rem 1rem; display: inline-block; margin: 0.5rem 0; }
+  .winner-banner p { font-size: 0.85rem; opacity: 0.85; }
+
+  /* PRIZE CLAIM */
+  .claim-card { background: var(--surface); border: 2px solid var(--green); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .claim-result { padding: 1rem; border-radius: 8px; text-align: center; margin-top: 0.75rem; }
+  .claim-result.valid { background: var(--green-light); border: 1px solid var(--green); }
+  .claim-result.invalid { background: #fef2f2; border: 1px solid var(--red); }
+  .claim-result.used { background: #fff7ed; border: 1px solid #f97316; }
+
+  /* SOLD LIST */
+  .sold-item { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+  .sold-item:last-child { border-bottom: none; }
+  .pkg-pill { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
+  .pkg-1 { background: var(--surface2); color: var(--text-muted); }
+  .pkg-5 { background: #dbeafe; color: #1d4ed8; }
+  .pkg-10 { background: var(--green-light); color: var(--green-dark); }
+  .scroll-list { max-height: 220px; overflow-y: auto; }
+
+  /* ALERTS */
+  .alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 0.75rem; }
+  .alert-warn { background: #fff7ed; border: 1px solid #f97316; color: #c2410c; }
+  .alert-info { background: var(--green-light); border: 1px solid var(--green); color: var(--green-dark); }
+  .alert-err { background: #fef2f2; border: 1px solid var(--red); color: var(--red); }
+
+  .sep { height: 1px; background: var(--border); margin: 1rem 0; }
+
+  /* LOADING */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text); color: #fff; border-radius: 10px; padding: 0.75rem 1.25rem; font-size: 0.88rem; z-index: 300; transition: transform 0.3s ease; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* CONFETTI */
+  #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+  @media (max-width: 480px) {
+    .packages { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(3,1fr); }
+    .stat-val { font-size: 1.2rem; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🏆</div>
+    <h2>Bavel Superstars</h2>
+    <p>Log in om verder te gaan</p>
+    <div class="form-row"><label>Gebruikersnaam</label><input type="text" id="login-user" placeholder="gebruikersnaam" autocomplete="username"></div>
+    <div class="form-row"><label>Wachtwoord</label><input type="password" id="login-pass" placeholder="wachtwoord" autocomplete="current-password"></div>
+    <div id="login-error" class="alert alert-err" style="display:none"></div>
+    <button class="btn btn-green btn-lg" onclick="doLogin()" style="margin-top:0.5rem">Inloggen</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <nav>
+    <div class="logo">
+      <img src="https://www.vvbavel.nl/wp-content/uploads/vvbavel/logo_vv_bavel_512x512px-01.png" alt="VV Bavel" onerror="this.style.display='none'">
+      BAVEL SUPERSTARS
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab visible" id="tab-admin" onclick="showPage('admin')">Beheer</button>
+      <button class="nav-tab visible" id="tab-kassa" onclick="showPage('kassa')">Kassa</button>
+      <button class="nav-tab visible" id="tab-prijzen" onclick="showPage('prijzen')">Prijzentafel</button>
+      <button class="nav-tab visible" id="tab-logout" onclick="doLogout()" style="color:var(--red)">Uitloggen</button>
+    </div>
+  </nav>
+
+  <!-- BEHEER -->
+  <div class="page" id="page-admin">
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="stat-lots">—</div><div class="stat-label">Loten totaal</div></div>
+      <div class="stat"><div class="stat-val" id="stat-sold">—</div><div class="stat-label" id="stat-sold-label">Verkopen</div></div>
+      <div class="stat"><div class="stat-val" id="stat-prizes">—</div><div class="stat-label">Prijzen</div></div>
+    </div>
+
+    <div class="card" id="admin-setup-card">
+      <div class="card-title">Prijzenlijst</div>
+      <div class="add-prize-row">
+        <div><label>Omschrijving</label><input id="new-prize-name" type="text" placeholder="bijv. Bierbon €10"></div>
+        <div><label>Aantal</label><input id="new-prize-count" type="number" min="1" value="1"></div>
+        <div style="padding-top:1.4rem"><button class="btn btn-green" onclick="addPrize()">+</button></div>
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('csv-upload').click()">
+        <div style="font-size:1.4rem">📂</div>
+        <p>CSV uploaden (naam, aantal — één per rij)</p>
+        <input type="file" id="csv-upload" accept=".csv" style="display:none" onchange="loadCSV(event)">
+      </div>
+      <ul class="prize-list" id="prize-list"></ul>
+      <div class="sep"></div>
+      <div class="form-row"><label>Totaal aantal loten</label><input type="number" id="total-lots" value="2000" min="10"></div>
+      <div id="prize-warning" class="alert alert-warn" style="display:none"></div>
+      <div id="generate-status" class="alert alert-info" style="display:none"></div>
+      <button class="btn btn-green btn-lg" id="generate-btn" onclick="generateLottery()">Loterij genereren & vergrendelen</button>
+    </div>
+
+    <div class="card" id="card-sold" style="display:none">
+      <div class="card-title">Verkochte loten</div>
+      <div class="scroll-list" id="sold-list"></div>
+      <div class="sep"></div>
+      <button class="btn btn-ghost" onclick="exportResults()" style="width:100%;justify-content:center">📥 Exporteer resultaten (.csv)</button>
+    </div>
+  </div>
+
+  <!-- KASSA -->
+  <div class="page" id="page-kassa">
+    <div id="kassa-locked" class="alert alert-warn" style="display:none">⚠️ Genereer eerst de loterij in het beheerderspanel.</div>
+    <div id="kassa-ready" style="display:none">
+      <div class="card" id="kassa-pkg-section">
+        <div class="card-title">Kies pakket</div>
+        <div class="packages">
+          <div class="pkg selected" data-pkg="1" onclick="selectPkg(this)">
+            <div class="pkg-price">€1</div>
+            <div class="pkg-name">Basis</div>
+            <div class="pkg-lots">1 lot</div>
+          </div>
+          <div class="pkg" data-pkg="5" onclick="selectPkg(this)">
+            <div class="pkg-price">€5</div>
+            <div class="pkg-name">Talent</div>
+            <div class="pkg-lots">6 loten</div>
+          </div>
+          <div class="pkg" data-pkg="10" onclick="selectPkg(this)">
+            <div class="pkg-badge">Altijd prijs!</div>
+            <div class="pkg-price">€10</div>
+            <div class="pkg-name">Superstar</div>
+            <div class="pkg-lots">12 loten</div>
+          </div>
+        </div>
+        <button class="btn btn-green btn-lg" onclick="issueTicket()" id="issue-btn">Lot uitgeven</button>
+      </div>
+
+      <div class="card" id="ticket-card" style="display:none">
+        <div class="card-title">Kras je lot!</div>
+        <div class="scratch-intro">
+          <h2 id="scratch-title">Kras je vakjes!</h2>
+          <p id="scratch-subtitle">Kras alle vakjes om te zien of je gewonnen hebt</p>
+        </div>
+        <div class="winner-banner" id="winner-banner">
+          <h3>🎉 Gefeliciteerd!</h3>
+          <div class="win-code" id="winner-code"></div>
+          <p id="winner-prize"></p>
+          <p style="margin-top:0.5rem;font-size:0.8rem">Toon deze code aan de prijzentafel</p>
+        </div>
+        <div id="scratch-grid-container"></div>
+        <button class="btn btn-ghost" onclick="revealAll()" id="reveal-all-btn" style="width:100%;justify-content:center;margin-bottom:0.5rem">Toon mijn resultaat</button>
+        <div class="sep"></div>
+        <button class="btn btn-ghost btn-lg" onclick="resetKassa()">← Nieuw lot uitgeven</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIJZENTAFEL -->
+  <div class="page" id="page-prijzen">
+    <div class="claim-card">
+      <div class="card-title">Code inwisselen</div>
+      <div class="form-row"><label>Winnaarscode</label><input type="text" id="claim-code-input" placeholder="bijv. WIN-4F9K" style="text-transform:uppercase;letter-spacing:0.1em;font-size:1.1rem"></div>
+      <button class="btn btn-green btn-lg" onclick="claimPrize()">Controleer code</button>
+      <div id="claim-result" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Uitgereikte prijzen</div>
+      <div class="scroll-list" id="claimed-list"><div style="color:var(--text-muted);font-size:0.85rem">Nog geen prijzen uitgedeeld.</div></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyVOvopigTLuAq0pD06dgNS0oF6Umg1aI",
+  authDomain: "superstars-loterij.firebaseapp.com",
+  databaseURL: "https://superstars-loterij-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "superstars-loterij",
+  storageBucket: "superstars-loterij.firebasestorage.app",
+  messagingSenderId: "700530646942",
+  appId: "1:700530646942:web:d0aa85a2f9087e9d10808f"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+// ====== USERS (hardcoded, uitbreidbaar) ======
+const USERS = {
+  admin:    { pass: 'bavel2025', role: 'admin' },
+  kassa:    { pass: 'kassa2026', role: 'kassa' },
+  prijzen:  { pass: 'prijzen2025', role: 'prijzen' },
+};
+
+let currentUser = null;
+let lotteryGenerated = false;
+let selectedPkg = 1;
+let scratchState = null;
+let localLots = {};
+
+// ====== LOGIN ======
+window.doLogin = function() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if (USERS[u] && USERS[u].pass === p) {
+    currentUser = { name: u, role: USERS[u].role };
+    err.style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    setupNavForRole();
+    initData();
+  } else {
+    err.style.display = 'block';
+    err.textContent = 'Gebruikersnaam of wachtwoord onjuist.';
+  }
+};
+
+window.doLogout = function() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+};
+
+function setupNavForRole() {
+  const role = currentUser.role;
+  document.getElementById('tab-admin').classList.toggle('visible', role === 'admin');
+  document.getElementById('tab-kassa').classList.toggle('visible', role === 'admin' || role === 'kassa');
+  document.getElementById('tab-prijzen').classList.toggle('visible', role === 'admin' || role === 'prijzen');
+
+  if (role === 'kassa') showPage('kassa');
+  else if (role === 'prijzen') showPage('prijzen');
+  else showPage('admin');
+}
+
+// ====== NAVIGATION ======
+window.showPage = function(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  const tab = document.getElementById('tab-' + p);
+  if (tab) tab.classList.add('active');
+  if (p === 'kassa') updateKassaView();
+};
+
+// ====== FIREBASE DATA ======
+function initData() {
+  // Listen to lottery config
+  onValue(ref(db, 'config'), snap => {
+    const data = snap.val();
+    lotteryGenerated = !!(data && data.generated);
+    if (data && data.lots) localLots = data.lots;
+    updateStats(data);
+    updateKassaView();
+    if (data && data.prizes) renderPrizeListFromDB(data.prizes, data.totalLots);
+  });
+
+  // Listen to sold tickets
+  onValue(ref(db, 'sold'), snap => {
+    const data = snap.val() || {};
+    renderSoldList(data);
+    updateStatsFromSold(data);
+  });
+
+  // Listen to claimed prizes
+  onValue(ref(db, 'claimed'), snap => {
+    renderClaimedList(snap.val() || {});
+  });
+}
+
+function updateStats(config) {
+  document.getElementById('stat-lots').textContent = config?.totalLots ?? '—';
+  const totalPrizes = config?.prizes ? Object.values(config.prizes).reduce((a, p) => a + p.count, 0) : 0;
+  document.getElementById('stat-prizes').textContent = totalPrizes || '—';
+}
+
+function updateStatsFromSold(sold) {
+  const entries = Object.values(sold);
+  const totalLots = entries.reduce((a, s) => a + (s.nums ? s.nums.length : 0), 0);
+  document.getElementById('stat-sold').textContent = entries.length;
+  document.getElementById('stat-sold-label').textContent = `${entries.length} verkopen / ${totalLots} loten`;
+}
+
+// ====== ADMIN: PRIZES ======
+let localPrizes = [];
+
+window.addPrize = function() {
+  const name = document.getElementById('new-prize-name').value.trim();
+  const count = parseInt(document.getElementById('new-prize-count').value);
+  if (!name || !count || count < 1) { toast('Vul naam en aantal in'); return; }
+  localPrizes.push({ name, count });
+  document.getElementById('new-prize-name').value = '';
+  document.getElementById('new-prize-count').value = '1';
+  renderLocalPrizeList();
+};
+
+window.removePrize = function(i) {
+  localPrizes.splice(i, 1);
+  renderLocalPrizeList();
+};
+
+function renderLocalPrizeList() {
+  renderPrizeItems(localPrizes);
+  checkPrizeWarning();
+}
+
+function renderPrizeListFromDB(prizes, total) {
+  if (localPrizes.length === 0 && prizes) {
+    localPrizes = Object.values(prizes);
+    renderPrizeItems(localPrizes);
+  }
+}
+
+function renderPrizeItems(prizes) {
+  const ul = document.getElementById('prize-list');
+  if (!prizes.length) { ul.innerHTML = '<li style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0">Nog geen prijzen.</li>'; return; }
+  ul.innerHTML = prizes.map((p, i) => `
+    <li class="prize-item">
+      <span>${p.name}</span>
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span class="prize-badge">${p.count}x</span>
+        <button class="delete-btn" onclick="removePrize(${i})">✕</button>
+      </div>
+    </li>
+  `).join('');
+}
+
+function checkPrizeWarning() {
+  const total = parseInt(document.getElementById('total-lots').value) || 2000;
+  const sum = localPrizes.reduce((a, p) => a + p.count, 0);
+  const warn = document.getElementById('prize-warning');
+  if (sum > total) { warn.style.display = 'block'; warn.textContent = `⚠️ Te veel prijzen! ${sum} stuks voor ${total} loten.`; }
+  else warn.style.display = 'none';
+}
+
+window.loadCSV = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const lines = ev.target.result.split('\n').filter(l => l.trim());
+    let added = 0;
+    lines.forEach(line => {
+      const parts = line.split(',');
+      if (parts.length >= 2) {
+        const name = parts[0].trim();
+        const count = parseInt(parts[1].trim());
+        if (name && count > 0) { localPrizes.push({ name, count }); added++; }
+      }
+    });
+    toast(`${added} prijzen geladen`);
+    renderLocalPrizeList();
+  };
+  reader.readAsText(file);
+};
+
+// ====== GENERATE LOTTERY ======
+window.generateLottery = async function() {
+  if (!localPrizes.length) { toast('Voeg eerst prijzen toe'); return; }
+  const total = parseInt(document.getElementById('total-lots').value) || 2000;
+  const sum = localPrizes.reduce((a, p) => a + p.count, 0);
+  if (sum > total) { toast('Te veel prijzen'); return; }
+
+  if (!confirm(`Loterij genereren met ${total} loten? Dit kan niet ongedaan worden gemaakt.`)) return;
+
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Bezig...';
+
+  // Build pool
+  let prizes = [];
+  localPrizes.forEach(p => { for (let i = 0; i < p.count; i++) prizes.push(p.name); });
+  const blanks = total - prizes.length;
+  let blanksPool = Array(blanks).fill('Niets');
+
+  // Shuffle both separately
+  shuffle(prizes);
+  shuffle(blanksPool);
+
+  // Distribute into blocks of 12 — each block gets at least 1 prize if available
+  const pool = Array(total).fill('Niets');
+  const blockSize = 12;
+  const numBlocks = Math.ceil(total / blockSize);
+  let prizeIndex = 0;
+  let blankIndex = 0;
+
+  for (let b = 0; b < numBlocks; b++) {
+    const start = b * blockSize;
+    const end = Math.min(start + blockSize, total);
+    const blockSlots = Array.from({length: end - start}, (_, i) => start + i);
+
+    // Pick a random slot in this block to guarantee a prize (if prizes remain)
+    if (prizeIndex < prizes.length) {
+      const guaranteedSlot = blockSlots[Math.floor(Math.random() * blockSlots.length)];
+      pool[guaranteedSlot] = prizes[prizeIndex++];
+    }
+
+    // Fill remaining slots with blanks (or extra prizes if still available)
+    blockSlots.forEach(slot => {
+      if (pool[slot] !== 'Niets') return; // already has guaranteed prize
+      if (prizeIndex < prizes.length && Math.random() < 0.3) {
+        pool[slot] = prizes[prizeIndex++];
+      } else if (blankIndex < blanksPool.length) {
+        pool[slot] = blanksPool[blankIndex++];
+      }
+    });
+  }
+
+  // Fill any remaining unfilled slots
+  for (let i = 0; i < total; i++) {
+    if (!pool[i] || pool[i] === 'Niets') {
+      if (prizeIndex < prizes.length) pool[i] = prizes[prizeIndex++];
+      else if (blankIndex < blanksPool.length) pool[i] = blanksPool[blankIndex++];
+    }
+  }
+
+  // Final shuffle within each block to randomize prize position
+  for (let b = 0; b < numBlocks; b++) {
+    const start = b * blockSize;
+    const end = Math.min(start + blockSize, total);
+    const block = pool.slice(start, end);
+    shuffle(block);
+    block.forEach((v, i) => pool[start + i] = v);
+  }
+
+  // Build lots object
+  const lots = {};
+  for (let i = 1; i <= total; i++) {
+    lots[i] = { prize: pool[i - 1] };
+  }
+
+  // Convert prizes array to object for Firebase
+  const prizesObj = {};
+  localPrizes.forEach((p, i) => prizesObj[i] = p);
+
+  try {
+    await set(ref(db, 'config'), {
+      generated: true,
+      totalLots: total,
+      prizes: prizesObj,
+      lots,
+      createdAt: new Date().toISOString()
+    });
+    await set(ref(db, 'sold'), null);
+    await set(ref(db, 'claimed'), null);
+    toast('Loterij gegenereerd!');
+    document.getElementById('card-sold').style.display = 'block';
+  } catch(err) {
+    toast('Fout bij opslaan: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Loterij genereren & vergrendelen';
+};
+
+// ====== KASSA ======
+function updateKassaView() {
+  document.getElementById('kassa-locked').style.display = lotteryGenerated ? 'none' : 'block';
+  document.getElementById('kassa-ready').style.display = lotteryGenerated ? 'block' : 'none';
+}
+
+window.selectPkg = function(el) {
+  document.querySelectorAll('.pkg').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPkg = parseInt(el.dataset.pkg);
+};
+
+const PACKAGES = { 1: 1, 5: 6, 10: 12 };
+
+function getAvailableLots() {
+  return Object.keys(localLots).map(Number).filter(n => !localLots[n].pkg);
+}
+
+function ensureGoldGuarantee(nums) {
+  // Already has a prize — nothing to do
+  const hasPrize = nums.some(n => localLots[n].prize !== 'Niets');
+  if (hasPrize) return;
+
+  // Find an available (unsold) lot that has a prize and swap it in
+  const available = getAvailableLots().filter(n => !nums.includes(n) && localLots[n].prize !== 'Niets');
+  if (!available.length) return; // No prize lots left — accept no guarantee
+
+  const swapOut = nums.find(n => localLots[n].prize === 'Niets');
+  if (swapOut === undefined) return;
+  const swapIn = available[Math.floor(Math.random() * available.length)];
+
+  // Swap prizes between the two lots
+  const tmp = localLots[swapOut].prize;
+  localLots[swapOut].prize = localLots[swapIn].prize;
+  localLots[swapIn].prize = tmp;
+}
+
+window.issueTicket = async function() {
+  if (Object.keys(localLots).length === 0) { toast('Data nog niet geladen, probeer opnieuw'); return; }
+  const available = getAvailableLots();
+  const count = PACKAGES[selectedPkg];
+  if (available.length < count) { toast('Niet genoeg loten beschikbaar!'); return; }
+
+  const btn = document.getElementById('issue-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  shuffle(available);
+  const nums = available.slice(0, count);
+  if (selectedPkg === 10) ensureGoldGuarantee(nums);
+
+  const code = 'WIN-' + makeCode();
+  const timestamp = new Date().toLocaleTimeString('nl-NL');
+
+  // Update lots in Firebase — include prize in case it was swapped
+  const updates = {};
+  nums.forEach(n => {
+    updates[`config/lots/${n}/pkg`] = selectedPkg;
+    updates[`config/lots/${n}/code`] = code;
+    updates[`config/lots/${n}/prize`] = localLots[n].prize;
+    localLots[n].pkg = selectedPkg;
+    localLots[n].code = code;
+  });
+
+  const entry = { nums, pkg: selectedPkg, code, scratched: false, timestamp };
+  const newRef = push(ref(db, 'sold'));
+  updates[`sold/${newRef.key}`] = entry;
+
+  try {
+    await update(ref(db), updates);
+    loadScratchForTicket(entry);
+    document.getElementById('ticket-card').style.display = 'block';
+    document.getElementById('kassa-pkg-section').style.display = 'none';
+  } catch(err) {
+    toast('Fout: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Lot uitgeven';
+};
+
+window.resetKassa = function() {
+  document.getElementById('ticket-card').style.display = 'none';
+  document.getElementById('kassa-pkg-section').style.display = 'block';
+  document.getElementById('winner-banner').classList.remove('show');
+  scratchState = null;
+};
+
+// ====== SCRATCH ======
+function loadScratchForTicket(entry) {
+  scratchState = { entry, revealed: new Set() };
+  document.getElementById('winner-banner').classList.remove('show');
+  const pkgNames = { 1: '🎟️ Basis', 5: '⭐ Talent', 10: '🌟 Superstar' };
+  document.getElementById('scratch-title').textContent = pkgNames[entry.pkg];
+  document.getElementById('scratch-subtitle').textContent = `${entry.nums.length} vakje${entry.nums.length > 1 ? 's' : ''} — kras om te onthullen`;
+  buildScratchGrid(entry.nums);
+}
+
+function buildScratchGrid(nums) {
+  const container = document.getElementById('scratch-grid-container');
+  container.innerHTML = '';
+  scratchState.boxes = [];
+  const grid = document.createElement('div');
+  grid.className = 'scratch-grid';
+  const cols = nums.length <= 1 ? 'cols-1' : nums.length <= 4 ? 'cols-2' : nums.length <= 9 ? 'cols-3' : 'cols-4';
+  grid.classList.add(cols);
+
+  nums.forEach(num => {
+    const prize = localLots[num]?.prize || 'Niets';
+    const isWin = prize !== 'Niets';
+    const box = document.createElement('div');
+    box.className = 'scratch-box';
+
+    const prizeDiv = document.createElement('div');
+    prizeDiv.className = 'scratch-prize';
+    prizeDiv.innerHTML = `<div class="prize-icon">${isWin ? '🎁' : '😢'}</div><div class="prize-text">${prize}</div>`;
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'scratch-layer';
+    canvas.width = 200; canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+
+    scratchState.boxes.push({ num, canvas, prizeDiv, isWin });
+
+    ctx.fillStyle = '#2E6B3A';
+    ctx.fillRect(0, 0, 200, 200);
+    ctx.fillStyle = '#3A7A48';
+    for (let i = 0; i < 30; i++) {
+      ctx.fillRect(Math.random()*200, Math.random()*200, 4+Math.random()*8, 2);
+    }
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('KRAS!', 100, 85);
+    ctx.font = '13px sans-serif';
+    ctx.fillText('#' + num, 100, 115);
+
+    box.appendChild(prizeDiv);
+    box.appendChild(canvas);
+    grid.appendChild(box);
+
+    let isDrawing = false;
+    const getPos = e => {
+      const rect = canvas.getBoundingClientRect();
+      const sx = 200 / rect.width, sy = 200 / rect.height;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
+    };
+    const scratchAt = pos => {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const checkRevealed = () => {
+      if (scratchState?.revealed.has(num)) return;
+      const data = ctx.getImageData(0, 0, 200, 200).data;
+      let cleared = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] === 0) cleared++;
+      if (cleared / (200*200) > 0.35) revealLot(num, canvas, prizeDiv, isWin);
+    };
+    canvas.addEventListener('mousedown', e => { isDrawing = true; scratchAt(getPos(e)); });
+    canvas.addEventListener('mousemove', e => { if (isDrawing) { scratchAt(getPos(e)); checkRevealed(); } });
+    canvas.addEventListener('mouseup', () => { isDrawing = false; checkRevealed(); });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; scratchAt(getPos(e)); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); if (isDrawing) { scratchAt(getPos(e)); checkRevealed(); } }, { passive: false });
+    canvas.addEventListener('touchend', () => { isDrawing = false; checkRevealed(); });
+  });
+
+  container.appendChild(grid);
+}
+
+async function revealLot(num, canvas, prizeDiv, isWin) {
+  if (!scratchState) return;
+  canvas.style.transition = 'opacity 0.3s';
+  canvas.style.opacity = '0';
+  setTimeout(() => canvas.remove(), 300);
+  prizeDiv.classList.add('prize-revealed', isWin ? 'won' : 'lost');
+  scratchState.revealed.add(num);
+
+  // Update Firebase
+  try {
+    await update(ref(db), { [`config/lots/${num}/scratched`]: true });
+    localLots[num].scratched = true;
+  } catch(e) {}
+
+  checkAllRevealed();
+}
+
+window.revealAll = function() {
+  if (!scratchState || !scratchState.boxes) return;
+  scratchState.boxes.forEach(b => {
+    if (!scratchState.revealed.has(b.num)) {
+      revealLot(b.num, b.canvas, b.prizeDiv, b.isWin);
+    }
+  });
+};
+
+async function checkAllRevealed() {
+  if (!scratchState) return;
+  const { entry, revealed } = scratchState;
+  if (revealed.size < entry.nums.length) return;
+
+  const wonPrizes = entry.nums.map(n => localLots[n]?.prize).filter(p => p && p !== 'Niets');
+
+  // Mark ticket as scratched in Firebase
+  try {
+    const soldSnap = await get(ref(db, 'sold'));
+    const sold = soldSnap.val() || {};
+    for (const [key, val] of Object.entries(sold)) {
+      if (val.code === entry.code) {
+        await update(ref(db, `sold/${key}`), { scratched: true });
+        break;
+      }
+    }
+  } catch(e) {}
+
+  if (wonPrizes.length > 0) {
+    // Save winner code to Firebase
+    const winCode = entry.code;
+    // Count duplicates: "2x testprijs, 1x Bierbon"
+    const counts = {};
+    wonPrizes.forEach(p => { counts[p] = (counts[p] || 0) + 1; });
+    const prizes = Object.entries(counts).map(([name, c]) => `${c}x ${name}`).join(', ');
+    try {
+      await set(ref(db, `winners/${winCode.replace('WIN-','')}`), {
+        code: winCode, prizes, claimed: false, timestamp: new Date().toISOString()
+      });
+    } catch(e) {}
+
+    document.getElementById('winner-banner').classList.add('show');
+    document.getElementById('winner-code').textContent = entry.code;
+    document.getElementById('winner-prize').textContent = 'Je wint: ' + prizes;
+    launchConfetti();
+  } else {
+    toast('Helaas, geen prijs. Probeer het opnieuw!');
+  }
+}
+
+// ====== PRIJZENTAFEL ======
+window.claimPrize = async function() {
+  const input = document.getElementById('claim-code-input').value.trim().toUpperCase();
+  const resultEl = document.getElementById('claim-result');
+
+  if (!input) { toast('Voer een code in'); return; }
+
+  const code = input.startsWith('WIN-') ? input.replace('WIN-', '') : input;
+
+  try {
+    const snap = await get(ref(db, `winners/${code}`));
+    resultEl.style.display = 'block';
+
+    if (!snap.exists()) {
+      resultEl.className = 'claim-result invalid';
+      resultEl.innerHTML = '<strong>❌ Ongeldige code</strong><br>Deze code bestaat niet.';
+      return;
+    }
+
+    const winner = snap.val();
+    if (winner.claimed) {
+      resultEl.className = 'claim-result used';
+      resultEl.innerHTML = `<strong>⚠️ Al gebruikt</strong><br>Deze prijs is al uitgedeeld.`;
+      return;
+    }
+
+    resultEl.className = 'claim-result valid';
+    resultEl.innerHTML = `
+      <strong>✅ Geldig!</strong><br>
+      <span style="font-size:1.1rem;font-weight:600">${winner.prizes}</span><br>
+      <button class="btn btn-green" style="margin-top:0.75rem;width:100%;justify-content:center" onclick="confirmClaim('${code}', '${winner.prizes}')">Prijs uitreiken & afvinken</button>
+    `;
+  } catch(err) {
+    resultEl.style.display = 'block';
+    resultEl.className = 'claim-result invalid';
+    resultEl.innerHTML = '❌ Fout bij ophalen: ' + err.message;
+  }
+};
+
+window.confirmClaim = async function(code, prizes) {
+  try {
+    await update(ref(db, `winners/${code}`), { claimed: true, claimedAt: new Date().toISOString() });
+    await push(ref(db, 'claimed'), { code: 'WIN-' + code, prizes, claimedAt: new Date().toLocaleTimeString('nl-NL') });
+    document.getElementById('claim-result').style.display = 'none';
+    document.getElementById('claim-code-input').value = '';
+    toast('Prijs uitgedeeld!');
+  } catch(err) {
+    toast('Fout: ' + err.message);
+  }
+};
+
+function renderClaimedList(claimed) {
+  const el = document.getElementById('claimed-list');
+  const items = Object.values(claimed);
+  if (!items.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem">Nog geen prijzen uitgedeeld.</div>'; return; }
+  el.innerHTML = items.slice().reverse().map(c => `
+    <div class="sold-item">
+      <span style="font-weight:600">${c.prizes}</span>
+      <span style="color:var(--text-muted);font-size:0.75rem">${c.code} · ${c.claimedAt}</span>
+    </div>
+  `).join('');
+}
+
+// ====== SOLD LIST ======
+function renderSoldList(sold) {
+  const el = document.getElementById('sold-list');
+  document.getElementById('card-sold').style.display = lotteryGenerated ? 'block' : 'none';
+  const items = Object.values(sold);
+  if (!items.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem">Nog geen loten verkocht.</div>'; return; }
+  el.innerHTML = items.slice().reverse().map(s => `
+    <div class="sold-item">
+      <div>
+        <span class="pkg-pill pkg-${s.pkg}">€${s.pkg}</span>
+        <span style="margin-left:0.5rem;color:var(--text-muted)">${s.code}</span>
+      </div>
+      <span style="font-size:0.75rem;color:${s.scratched ? 'var(--green)' : 'var(--text-muted)'}">${s.scratched ? '✓ Gekrast' : 'Open'}</span>
+    </div>
+  `).join('');
+}
+
+// ====== EXPORT ======
+window.exportResults = async function() {
+  const snap = await get(ref(db, 'sold'));
+  const sold = snap.val() || {};
+  let csv = 'Code,Pakket,Tijdstip,Status,Prijzen\n';
+  Object.values(sold).forEach(s => {
+    const prizes = (s.nums || []).map(n => localLots[n]?.prize || '').filter(p => p !== 'Niets').join('; ');
+    csv += `${s.code},€${s.pkg},${s.timestamp},${s.scratched ? 'Gekrast' : 'Open'},"${prizes}"\n`;
+  });
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'loterij_resultaten.csv';
+  a.click();
+};
+
+// ====== UTILS ======
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function makeCode() {
+  return Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+window.toast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#2E8B4A','#5CB87A','#A8D8B8','#ffffff','#1A5C30','#E8F5EE'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    w: 6 + Math.random() * 8, h: 3 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rot: Math.random() * Math.PI * 2,
+    vel: { x: (Math.random() - 0.5) * 3, y: 2 + Math.random() * 3 },
+    spin: (Math.random() - 0.5) * 0.15
+  }));
+  let frame = 0;
+  const anim = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+      p.x += p.vel.x; p.y += p.vel.y; p.rot += p.spin; p.vel.y += 0.05;
+    });
+    if (++frame < 180) requestAnimationFrame(anim);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+  requestAnimationFrame(anim);
+}
+
+// Enter key on login
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
+</script>
+</body>
+</html>
